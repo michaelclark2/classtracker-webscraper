@@ -1,6 +1,7 @@
 from urllib import request
 from bs4 import BeautifulSoup
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 import csv
 import re
 import requests
@@ -17,7 +18,6 @@ def scrape_replit(student_name, url):
       bs = BeautifulSoup(rq, 'html.parser')
 
       if not bs.find('div', class_='profile-no-repls') is None:
-        print(f'ERROR: {student_name} has no repls')
         return
 
       repls = bs.find_all('a', class_='repl-item-wrapper')
@@ -69,7 +69,7 @@ def scrape_codecademy(student_name, url):
           badges_url = achievement_link['href']
           badge_req = request.Request(f'https://codecademy.com{badges_url}', headers=FAKE_HEADERS)
         else:
-          print(f"{student_name} needs to update their privacy settings")
+          print(f"{student_name} needs to update their privacy settings on codecademy")
           return
 
         with request.urlopen(badge_req) as badges:
@@ -202,7 +202,9 @@ def scrape_freecodecamp(student_name, url):
   ]
 
   if url:
-    with webdriver.Firefox() as driver:
+    options = Options()
+    options.headless = True
+    with webdriver.Firefox(options=options) as driver:
       driver.get(url)
       driver.implicitly_wait(1)
       next_button = driver.find_elements_by_css_selector('button[aria-label="Go to Next page"]')
@@ -231,27 +233,25 @@ def scrape_freecodecamp(student_name, url):
 
 
 def main():
-  with open('students.csv') as students_csv:
-    reader = csv.DictReader(students_csv)
-    for student in reader:
+  #with open('students.csv') as students_csv:
+  with request.urlopen('https://classtracker-624ff.firebaseio.com/students.json') as student_req:
+    students_dict = student_req.read()
+    students_dict = json.loads(students_dict)
+    student_ids = [id for id in list(students_dict.keys()) if 'instructor' not in id ]
+    for student_id in student_ids:
+      student = students_dict[student_id]
+
       name = f'{student["firstName"]} {student["lastName"]}'
       repls = scrape_replit(name, student['replIt']) or 0
       ca_percentage = scrape_codecademy(name, student['codeAcademy']) or 0
       fcc_percentage = scrape_freecodecamp(name, student['freeCodeCamp']) or 0
       print(name, "repls: {}, codecademy: {}, freecodecamp: {}".format(repls, ca_percentage, fcc_percentage))
 
-      with request.urlopen('https://classtracker-624ff.firebaseio.com/students.json?orderBy="email"&equalTo="{}"'.format(student["email"])) as student_req:
-        data = student_req.read()
+      student["replCount"] = repls
+      student["caPercentage"] = ca_percentage
+      student["fccPercentage"] = fcc_percentage
 
-        student_obj = json.loads(data)
-        student_id = list(student_obj.keys())[0]
-
-        student_obj[student_id]["replCount"] = repls
-        student_obj[student_id]["caPercentage"] = ca_percentage
-        student_obj[student_id]["fccPercentage"] = fcc_percentage
-
-        print(student_obj[student_id])
-        x = requests.put('https://classtracker-624ff.firebaseio.com/students/{}.json'.format(student_id), data=json.dumps(student_obj[student_id]))
+      x = requests.put('https://classtracker-624ff.firebaseio.com/students/{}.json'.format(student_id), data=json.dumps(student))
 
 if __name__ == "__main__":
     main()
