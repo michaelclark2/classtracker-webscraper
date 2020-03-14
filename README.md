@@ -3,6 +3,8 @@
 Making sure students are doing the prework
 ## Requirements
 - Python 3.8
+- Firefox
+- geckodriver (use brew or npm or pip)
 ## How to run
 1. Create virtual environment
     ```
