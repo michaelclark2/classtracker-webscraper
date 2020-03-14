@@ -3,7 +3,8 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import csv
 import re
-from time import sleep
+import requests
+import json
 
 FAKE_HEADERS = {'User-Agent': 'Mozilla/5.0'}
 
@@ -234,10 +235,23 @@ def main():
     reader = csv.DictReader(students_csv)
     for student in reader:
       name = f'{student["firstName"]} {student["lastName"]}'
-      repls = scrape_replit(name, student['replIt'])
-      ca_percentage = scrape_codecademy(name, student['codeAcademy'])
-      fcc_percentage = scrape_freecodecamp(name, student['freeCodeCamp'])
+      repls = scrape_replit(name, student['replIt']) or 0
+      ca_percentage = scrape_codecademy(name, student['codeAcademy']) or 0
+      fcc_percentage = scrape_freecodecamp(name, student['freeCodeCamp']) or 0
       print(name, "repls: {}, codecademy: {}, freecodecamp: {}".format(repls, ca_percentage, fcc_percentage))
+
+      with request.urlopen('https://classtracker-624ff.firebaseio.com/students.json?orderBy="email"&equalTo="{}"'.format(student["email"])) as student_req:
+        data = student_req.read()
+
+        student_obj = json.loads(data)
+        student_id = list(student_obj.keys())[0]
+
+        student_obj[student_id]["replCount"] = repls
+        student_obj[student_id]["caPercentage"] = ca_percentage
+        student_obj[student_id]["fccPercentage"] = fcc_percentage
+
+        print(student_obj[student_id])
+        x = requests.put('https://classtracker-624ff.firebaseio.com/students/{}.json'.format(student_id), data=json.dumps(student_obj[student_id]))
 
 if __name__ == "__main__":
     main()
