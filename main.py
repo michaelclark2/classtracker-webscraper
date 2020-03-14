@@ -20,7 +20,6 @@ def scrape_replit(student_name, url):
         return
 
       repls = bs.find_all('a', class_='repl-item-wrapper')
-      print(f'{student_name} has {len(repls)} repls')
       return len(repls)
 
   except Exception as e:
@@ -81,7 +80,8 @@ def scrape_codecademy(student_name, url):
           for badge in all_badges:
             if badge.contents[0] in REQUIRED_BADGES:
               completed_badges += 1
-          return percent_complete = int((completed_badges / len(REQUIRED_BADGES)) * 100)
+          percent_complete = int((completed_badges / len(REQUIRED_BADGES)) * 100)
+          return percent_complete
 
     except Exception as e:
       print(e)
@@ -203,7 +203,7 @@ def scrape_freecodecamp(student_name, url):
   if url:
     with webdriver.Firefox() as driver:
       driver.get(url)
-      driver.implicitly_wait(2)
+      driver.implicitly_wait(1)
       next_button = driver.find_elements_by_css_selector('button[aria-label="Go to Next page"]')
 
       lessons = []
@@ -224,7 +224,8 @@ def scrape_freecodecamp(student_name, url):
         if name in lessons:
           finished_lessons += 1
 
-      return percentage = int(finished_lessons / len(REQUIRED_LESSONS) * 100)
+      percentage = int(finished_lessons / len(REQUIRED_LESSONS) * 100)
+      return percentage
 
 
 
@@ -236,6 +237,7 @@ def main():
       repls = scrape_replit(name, student['replIt'])
       ca_percentage = scrape_codecademy(name, student['codeAcademy'])
       fcc_percentage = scrape_freecodecamp(name, student['freeCodeCamp'])
+      print(name, "repls: {}, codecademy: {}, freecodecamp: {}".format(repls, ca_percentage, fcc_percentage))
 
 if __name__ == "__main__":
     main()
