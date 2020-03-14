@@ -21,6 +21,7 @@ def scrape_replit(student_name, url):
 
       repls = bs.find_all('a', class_='repl-item-wrapper')
       print(f'{student_name} has {len(repls)} repls')
+      return len(repls)
 
   except Exception as e:
     print(f'ERROR: {student_name} {e}')
@@ -80,8 +81,7 @@ def scrape_codecademy(student_name, url):
           for badge in all_badges:
             if badge.contents[0] in REQUIRED_BADGES:
               completed_badges += 1
-          percent_complete = int((completed_badges / len(REQUIRED_BADGES)) * 100)
-          # TODO: do something with this percentage
+          return percent_complete = int((completed_badges / len(REQUIRED_BADGES)) * 100)
 
     except Exception as e:
       print(e)
@@ -224,9 +224,7 @@ def scrape_freecodecamp(student_name, url):
         if name in lessons:
           finished_lessons += 1
 
-      percentage = int(finished_lessons / len(REQUIRED_LESSONS) * 100)
-      print(finished_lessons, len(REQUIRED_LESSONS))
-      print(student_name, percentage)
+      return percentage = int(finished_lessons / len(REQUIRED_LESSONS) * 100)
 
 
 
@@ -235,9 +233,9 @@ def main():
     reader = csv.DictReader(students_csv)
     for student in reader:
       name = f'{student["firstName"]} {student["lastName"]}'
-      #scrape_replit(name, student['replIt'])
-      # scrape_codecademy(name, student['codeAcademy'])
-      scrape_freecodecamp(name, student['freeCodeCamp'])
+      repls = scrape_replit(name, student['replIt'])
+      ca_percentage = scrape_codecademy(name, student['codeAcademy'])
+      fcc_percentage = scrape_freecodecamp(name, student['freeCodeCamp'])
 
 if __name__ == "__main__":
     main()
