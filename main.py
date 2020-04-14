@@ -85,7 +85,7 @@ def scrape_codecademy(student_name, url):
           return percent_complete
 
     except Exception as e:
-      print(e)
+      print(f'{student_name}: {e}')
 
 def scrape_freecodecamp(student_name, url):
   REQUIRED_LESSONS = [
