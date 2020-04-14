@@ -33,7 +33,7 @@ def scrape_codecademy(student_name, url):
     "Lesson Completed: Loops",
     "Lesson Completed: Arrays",
     "Lesson Completed: Scope",
-    "Lesson Completed: Functions and Operations",
+    "Lesson Completed: Functions",
     "Lesson Completed: Variables",
     "Lesson Completed: Introduction to JavaScript",
     "Lesson Completed: Tables",
@@ -77,11 +77,11 @@ def scrape_codecademy(student_name, url):
           badge_soup = BeautifulSoup(badges, 'html.parser')
           all_badges = badge_soup.find_all(is_badge_title)
 
-          completed_badges = 0
+          completed_badges = []
           for badge in all_badges:
-            if badge.contents[0] in REQUIRED_BADGES:
-              completed_badges += 1
-          percent_complete = int((completed_badges / len(REQUIRED_BADGES)) * 100)
+            if badge.contents[0].strip() in REQUIRED_BADGES:
+              completed_badges.append(badge.contents[0].strip())
+          percent_complete = int((len(completed_badges) / len(REQUIRED_BADGES)) * 100)
           return percent_complete
 
     except Exception as e:
