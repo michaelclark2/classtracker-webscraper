@@ -242,7 +242,7 @@ def main():
       student = students_dict[student_id]
 
       if student['preworkComplete']:
-        return
+        break
 
       name = f'{student["firstName"]} {student["lastName"]}'
       repls = scrape_replit(name, student['replIt']) or 0
