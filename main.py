@@ -241,6 +241,9 @@ def main():
     for student_id in student_ids:
       student = students_dict[student_id]
 
+      if student['preworkComplete']:
+        return
+
       name = f'{student["firstName"]} {student["lastName"]}'
       repls = scrape_replit(name, student['replIt']) or 0
       ca_percentage = scrape_codecademy(name, student['codeAcademy']) or 0
